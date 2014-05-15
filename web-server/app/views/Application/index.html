@@ -1,0 +1,50 @@
+#{extends 'main.html' /}
+#{set title:'Home' /}
+<form method="post" action="/chart">
+    <h4>Databases:&nbsp;
+        <select name="dbs" id="dbs">
+        #{list items: dbs, as:'i'}<option value="${i}">${i}</option>#{/list}
+        </select>
+    </h4>
+    <h4>
+        Collections:&nbsp;
+        <select name="collections" id="collections"></select>
+    </h4>
+    <h4>Fields:&nbsp;
+        <select name="fields" id="fields"></select>
+    </h4>
+    <input type="submit" value="Create chart">
+
+</form>
+<script type="text/javascript">
+    $(function() {
+        $.ajaxSetup({async: false});
+        $("#dbs").change(function() {
+            var value = $(this).val();
+
+            $.get("/collections", {"dbname": value}, function(data) {
+                $("#collections").find("option").remove();
+                $(data).each(function(index, element) {
+                    var htmlTemplate = "<option value='" + element +"'>" + element + "</option>";
+                    $("#collections").append(htmlTemplate);
+                })
+            });
+        })
+
+        $("#collections").change(function() {
+            var db = $("#dbs").val();
+            var col = $(this).val();
+            $.get("/fields", {"dbname": db, "collectionname": col}, function(data) {
+                $("#fields").find("option").remove();
+                $(data).each(function(index,element) {
+                    var htmlTemplate2 = "<option value='" + element +"'>" + element + " </option>";
+                    $("#fields").append(htmlTemplate2);
+                })
+
+            });
+        })
+        $("#dbs").change();
+        $("#collections").change();
+    })
+
+</script>
