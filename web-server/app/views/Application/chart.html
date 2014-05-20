@@ -7,34 +7,30 @@
 <canvas id="canvas"></canvas>
 <script>
 
-    var data1 = {
-        labels : ["", "", ""],
-        datasets : [
-            {
-                fillColor : "rgba(220,220,220,0)",
-                strokeColor : "rgba(220,220,220,0)",
-                data : [0,0,0]
-            },
-            {
-                fillColor : "rgba(200,100,200,0.5)",
-                strokeColor : "rgba(180,180,180,1)",
-                data : [2,1,3]
-            }
-        ]
-    };
-
     $(function(){
         $.get("/getData", {"dbs": '${dbs}', "collections": '${collections}',
-            "fields": '${fields}' }, function(data) {
-            data1.labels = data[0];
-            data1.datasets[1].data = data[1];
-        })
+            "fields": '${fields}' },
+                function(data) {
+                    var barData = {
+                        datasets : [ ]
+                    };
+                    barData.labels = data[0];
+                    //barData.datasets[0].data = data[1];
+                    barData.datasets.push({
+                        fillColor : "rgba(200,100,200,0.5)",
+                        strokeColor : "rgba(180,180,180,1)",
+                        data: data[1]
+                    });
+                    draw(barData);
+                })
     });
 
-    var myRadar = new Chart(document.getElementById("canvas").getContext("2d")).Bar(data1,
-            {
-                scaleShowLabels : true,
-                pointLabelFontSize : 18,
-                scaleFontSize : 18
-            });
+    function draw(barData) {
+        new Chart(document.getElementById("canvas").getContext("2d")).Bar(barData,
+                {
+                    scaleShowLabels: true,
+                    pointLabelFontSize: 18,
+                    scaleFontSize: 18
+                });
+    }
 </script>

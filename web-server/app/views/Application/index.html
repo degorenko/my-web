@@ -1,35 +1,32 @@
 #{extends 'main.html' /}
 #{set title:'Home' /}
-<div id="container">
+<div id="container" xmlns="http://www.w3.org/1999/html">
     <div id="header">
         <h1>mini<strong>DEMO</strong></h1>
         <h2>Show example statistic for my project</h2>
     </div>
     <div id="sidebar">
-        <h1>Choose fields</h1>
-        <p> This is where you can choose dataBase, collections, fields and categories</p>
+        <h1>Mini FAQ</h1>
+        <p> Choose db, collection and fields</p>
+        <p> When you choose some field, also you can specify additional parameter
+            from others fields.
+        </p>
     </div>
     <div id="content">
-        <h1>Introduction</h1>
-        <h2>Take statistic for your needs!</h2>
-        <p> This is very simple demo for my project, which will create simple graphs for data from MongoDB. </p>
-        <p> If you want and known how you can upgrade this web site - welcome! My knowledge about web-programming is not so big. </p>
-        <div class="article_menu"> <b>Posted on 16 May 2014</b> <a href="http://github.com/degorenko/my-web/">Source on GitHub</a> </div>
-
         <h1>Graphs</h1>
-        <h2>Choose fields and take graph</h2>
         <form method="post" action="/chart">
-            <h1>Choose fields</h1>
-            <p> This is where you can choose dataBase, collections, fields and categories</p>
-            <h1>Databases:</h1>
+            <p> This is where you can choose dataBase, collections, fields and categories.</p>
+            <h2>Databases:
             <select name="dbs" id="dbs">
                 #{list items: dbs, as:'i'}<option value="${i}">${i}</option>#{/list}
-            </select>
-            <h1>Collections:</h1>
-            <select name="collections" id="collections"></select>
-            <h1>Fields:</h1>
-            <select name="fields" id="fields"></select>
-            <h1><input type="submit" value="Create chart"></h1>
+            </select></h2>
+            <h2>Collections:
+            <select name="collections" id="collections"></select></h2>
+            <h2>Fields:
+            <select name="fields" id="fields"></select></h2>
+            <input type="checkbox" id="checkbox1">label1</input>
+            <input type="checkbox" id="checkbox2">label2</input>
+            <h2><input type="submit" value="Create chart"></h2>
         </form>
     </div>
 </div>

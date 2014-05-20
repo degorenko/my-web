@@ -81,7 +81,7 @@ body {
 
 #sidebar h1 {
     font-family:Verdana, Arial, Helvetica, sans-serif;
-    font-size:12px;
+    font-size:18px;
     color:#000;
     margin:10px 5px 15px 10px;
 }
@@ -90,47 +90,7 @@ body {
     margin:5px 5px 5px 10px;
     line-height:17px;
     word-spacing:-1px;
-}
-
-ul.submenu {
-    margin:0;
-    padding:0;
-}
-.submenu li {
-    marign:0;
-    padding:0;
-    list-style:none;
-}
-.submenu a {
-    display:block;
-    height:13px;
-    padding:7px 7px 7px 17px;
-    margin:1px 0 0 0;
-    background-color:#fff;
-    background-image:url(../images/submenua_normal.jpg);
-    background-position:left;
-    background-repeat:repeat-y;
-}
-.submenu a:hover {
-    background-image:url(../images/submenua.jpg);
-    background-position:bottom;
-    background-repeat:no-repeat;
-    background-color:#fff;
-    padding:7px 7px 7px 15px;
-}
-.submenu a:focus {
-    background-image:url(../images/submenua.jpg);
-    background-position:bottom;
-    background-repeat:no-repeat;
-    background-color:#fff;
-    padding:7px 7px 7px 15px;
-}
-.submenu a:active {
-    background-image:url(../images/submenua.jpg);
-    background-position:bottom;
-    background-repeat:no-repeat;
-    background-color:#fff;
-    padding:7px 7px 7px 15px;
+    font-size: 15px;
 }
 
 .note {
@@ -147,7 +107,7 @@ ul.submenu {
 }
 #content h1 {
     font-family:Trebuchet MS, Geneva, Arial, Helvetica, sans-serif;
-    font-size:14px;
+    font-size:20px;
     border-bottom:1px solid #eee;
     padding:5px;
     color:#000;
@@ -165,15 +125,16 @@ ul.submenu {
     background-image:url(../images/h1_hover.png);
 }
 #content h2 {
-    font-size:11px;
-    color:#ccc;
+    font-size:14px;
+    color:#222222;
     margin:10px 0 10px 0;
     padding:5px;
 }
 #content p {
     padding:5px;
     line-height:18px;
-    word-spacing: 0.1em;
+    word-spacing: 0.2em;
+    font-size: 18px;
 }
 #content .article_menu {
     text-align:right;

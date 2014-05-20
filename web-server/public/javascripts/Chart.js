@@ -1027,8 +1027,10 @@ window.Chart = function(context){
 		//Check and set the scale
 		labelTemplateString = (config.scaleShowLabels)? config.scaleLabel : "";
 		if (!config.scaleOverride){
-			
-			calculatedScale = calculateScale(scaleHeight,valueBounds.maxSteps,valueBounds.minSteps,valueBounds.maxValue,valueBounds.minValue,labelTemplateString);
+
+            // old value
+			//calculatedScale = calculateScale(scaleHeight,valueBounds.maxSteps,valueBounds.minSteps,valueBounds.maxValue,valueBounds.minValue,labelTemplateString);
+            calculatedScale = calculateScale(scaleHeight,valueBounds.maxSteps,valueBounds.minSteps,valueBounds.maxValue + 1,0,labelTemplateString);
 		}
 		else {
 			calculatedScale = {
@@ -1282,7 +1284,7 @@ window.Chart = function(context){
 
 	function calculateScale(drawingHeight,maxSteps,minSteps,maxValue,minValue,labelTemplateString){
 			var graphMin,graphMax,graphRange,stepValue,numberOfSteps,valueRange,rangeOrderOfMagnitude,decimalNum;
-			
+
 			valueRange = maxValue - minValue;
 			
 			rangeOrderOfMagnitude = calculateOrderOfMagnitude(valueRange);

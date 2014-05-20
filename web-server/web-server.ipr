@@ -29,7 +29,7 @@
   <component name="EntryPointsManager">
     <entry_points version="2.0" />
   </component>
-  <component name="IdProvider" IDEtalkID="60ADCA9FD544D89F8E9AE3C9A6EBEF4B" />
+  <component name="IdProvider" IDEtalkID="B1BCD23F5E1E9914182E676056FDA108" />
   <component name="Palette2">
     <group name="Swing">
       <item class="com.intellij.uiDesigner.HSpacer" tooltip-text="Horizontal Spacer" icon="/com/intellij/uiDesigner/icons/hspacer.png" removable="false" auto-create-binding="false" can-attach-label="false">
@@ -159,15 +159,6 @@
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="1.7" project-jdk-type="JavaSDK" />
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="" />
-  </component>
-  <component name="libraryTable">
-    <library name="mongo-java-driver-2.12.1">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/mongo-java-driver-2.12.1.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
   </component>
 </project>
 
