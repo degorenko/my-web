@@ -17,31 +17,38 @@ public class Application extends Controller {
         render(dbs);
     }
 
-    public static void collections(String dbname) {
-        Set<String> collections = core.getCollections(dbname);
+    public static void collections(String db) {
+        Set<String> collections = core.getCollections(db);
         renderJSON(collections);
     }
 
-    public static void fields(String dbname, String collectionname) {
-       Set<String> fields = core.getFields(dbname, collectionname);
+    public static void fields(String db, String collection) {
+       Set<String> fields = core.getFields(db, collection);
         renderJSON(fields);
     }
 
-    public static void chart(String dbs, String collections, String fields, Boolean checkbox1, Boolean checkbox2) {
-        render(dbs, collections, fields, checkbox1, checkbox2);
+    public static void getRecords(String db, String collection,
+                                  String field, int skip, int limit) {
+        Set<String> records = core.getRecords(db, collection, field, skip, limit);
+        renderJSON(records);
     }
 
-    public static void getData(String dbs, String collections, String fields, String checkbox1, String checkbox2) {
+    public static void chart(String dbs, String collections, String fields, String boxes) {
+        render(dbs, collections, fields, boxes);
+    }
+
+    public static void getData(String dbs, String collections, String fields, String boxes) {
         //ArrayList<Object> res = core.getValues(dbs, collections, fields);
         //   ArrayList<Object> res = core.getValues(dbs, collections, fields);
         ArrayList<Object> res = new ArrayList<Object>(2);
         ArrayList<String> list1 = new ArrayList<String>();
         ArrayList<Integer> list2 = new ArrayList<Integer>();
-        if (checkbox1 != null) {
+        List<String> labels = Arrays.asList(boxes.split(","));
+        if (labels.contains("label1")) {
             list1.add("label1");
             list2.add(3);
         }
-        if (checkbox2 != null) {
+        if (labels.contains("label2")) {
             list1.add("label2");
             list2.add(1);
         }

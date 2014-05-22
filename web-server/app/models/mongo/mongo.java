@@ -41,6 +41,17 @@ public class mongo {
         return fields;
     }
 
+    public HashSet<String> getRecords(String db, String collection, String field, int skip, int limit){
+        DBCollection curCollection = mongoClient.getDB(db).getCollection(collection);
+        DBObject obj = new BasicDBObject().append(field, 1).append("_id", 0);
+        DBCursor resCursor = curCollection.find(null, obj);
+        HashSet<String> result = new HashSet<String>();
+        while(resCursor.hasNext()){
+            result.add((String) resCursor.next().get(field));
+        }
+        return result;
+    }
+
     public ArrayList<Object> getValues(String dbs, String collections, String fields) {
         DBCollection collection = mongoClient.getDB(dbs).getCollection(collections);
         List<DBObject> listCommand = new ArrayList<DBObject>();

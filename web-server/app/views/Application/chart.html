@@ -4,12 +4,13 @@
 <h1>${dbs}</h1>
 <h1>${collections}</h1>
 <h1>${fields}</h1>
+<h1>${boxes}</h1>
 <canvas id="canvas"></canvas>
 <script>
 
     $(function(){
         $.get("/getData", {"dbs": '${dbs}', "collections": '${collections}',
-            "fields": '${fields}' },
+            "fields": '${fields}', "boxes": '${boxes}' },
                 function(data) {
                     var barData = {
                         datasets : [ ]
