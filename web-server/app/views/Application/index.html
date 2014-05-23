@@ -34,49 +34,60 @@
 <script type="text/javascript">
     $(function() {
         var checked_boxes = [];
-        var limit = 10;
+        var limit = 6;
         var skip = 0;
         $.ajaxSetup({async: false});
         $("#dbs").change(function() {
             var value = $(this).val();
-
             $.get("/collections", {"db": value}, function(data) {
                 $("#collections").find("option").remove();
+                $("#fields").find("option").remove();
+                $("#boxes").find("input").remove();
+                $("#boxes").find("label").remove();
                 $(data).each(function(index, element) {
                     var dbMember = "<option value='" + element +"'>" + element + "</option>";
                     $("#collections").append(dbMember);
                 })
+                $("#collections").change();
             });
         });
 
         $("#collections").change(function() {
             var db = $("#dbs").val();
             var col = $(this).val();
-            $.get("/fields", {"db": db, "collection": col}, function(data) {
-                $("#fields").find("option").remove();
-                $(data).each(function(index,element) {
-                    var colMember = "<option value='" + element +"'>" + element + " </option>";
-                    $("#fields").append(colMember);
-                })
+            if (col != null) {
+                $.get("/fields", {"db": db, "collection": col}, function(data) {
+                    $("#fields").find("option").remove();
+                    $(data).each(function(index,element) {
+                        var colMember = "<option value='" + element +"'>" + element + " </option>";
+                        $("#fields").append(colMember);
+                    })
 
-            });
-            skip = 0;
-            var field = $("#fields").val();
-            $.get("/getRecords", {"db": db, "collection": col, "field": field,
-                "skip": skip, "limit": limit }, function(data) {
-                $("#boxes").find("input").remove();
-                $("#boxes").find("label").remove();
-                $(data).each(function(index,element) {
-                    var checkboxTemplate = "<input type='checkbox' class='box' id='checkbox-" + element + "'/>";
-                    var labelTemplate = "<label for='checkbox-" + element + "'>" + element + "</label>";
-                    $("#boxes").append(checkboxTemplate);
-                    $("#boxes").append(labelTemplate);
-                    skip+=limit;
-                })
-            });
+                });
+                skip = 0;
+                $("#fields").each(function(index_field) {
+                    var field = $(this).val();
+                    $("#boxes").find("input").remove();
+                    $("#boxes").find("label").remove();
+                    var fieldNameTemplate = "<label>" + field + ":</label>"
+                    $("#boxes").append(fieldNameTemplate);
+                    $.get("/getRecords", {"db": db, "collection": col, "field": field,
+                        "skip": skip, "limit": limit }, function(data) {
+                        $(data).each(function(index,element) {
+                            var checkboxTemplate = "<input type='checkbox' class='box' id='checkbox-" + element + "'/>";
+                            var labelTemplate = "<label for='checkbox-" + element + "'>" + element + "</label>";
+                            $("#boxes").append(checkboxTemplate, labelTemplate);
+                            skip+=limit;
+                        })
+                    });
+                    var prevValueTemplate = "<br><label class='prev' x-id='" + field + "'>Previous</label> "
+                    var nextValueTemplate = "<label class='next' x-id='" + field + "'>Next</label><br>"
+                    $("#boxes").append(prevValueTemplate, nextValueTemplate);
+                });
+            }
         });
 
-        $(".box").change(function(){
+        $(".box").live("change", function(){
             var checked = $(this).prop('checked');
             var _value = $(this).next("label").text();
             if (checked) {
@@ -84,13 +95,20 @@
             } else {
                 checked_boxes.splice( $.inArray(_value, checked_boxes), 1 );
             }
-            console.log(checked_boxes);
             $("#boxes_hidden").val(checked_boxes);
         }).change();
 
+        $(".next").live("click", function() {
+            console.log($(this).attr("x-id"));
+        });
+
+        $(".prev").live("click", function() {
+            console.log($(this).attr("x-id"));
+        });
+
         $("#dbs").change();
-        $("#collections").change();
-        $(".box").change();
+        //$("#collections").change();
+        //$(".box").change();
     })
 
 </script>
