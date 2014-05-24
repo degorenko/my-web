@@ -43,41 +43,98 @@ public class mongo {
 
     public HashSet<String> getRecords(String db, String collection, String field, int skip, int limit){
         DBCollection curCollection = mongoClient.getDB(db).getCollection(collection);
-        DBObject obj = new BasicDBObject().append(field, 1).append("_id", 0);
-        DBCursor resCursor = curCollection.find(null, obj).skip(skip).limit(limit);
-        HashSet<String> result = new HashSet<String>();
-        while(resCursor.hasNext()){
-            result.add((String) resCursor.next().get(field));
+        List<DBObject> listCommand = getRecordsQuery(field, skip, limit);
+        Iterator<DBObject> resCursor = curCollection.aggregate(listCommand).results().iterator();
+        HashSet<String> records = new HashSet<String>();
+        while (resCursor.hasNext()) {
+            DBObject obj = resCursor.next();
+            String record = obj.get("_id").toString();
+            records.add(record);
         }
-        return result;
+        return records;
     }
 
-    public ArrayList<Object> getValues(String dbs, String collections, String fields) {
+    public ArrayList<Object> getValues(String dbs, String collections, String field, String criteria) {
+        List<DBObject> listCommand;
+        if (criteria.length() == 0) {
+            listCommand = getValuesQuery(field, null);
+        } else {
+            listCommand = getValuesQuery(field, parseCriteria(criteria));
+        }
         DBCollection collection = mongoClient.getDB(dbs).getCollection(collections);
-        List<DBObject> listCommand = new ArrayList<DBObject>();
-        BasicDBObject project = new BasicDBObject();
-        BasicDBObject var = new BasicDBObject("field", "$" + fields);
-        var.put("count", new BasicDBObject("$add", 1));
-        project.put("$project", var);
-        BasicDBObject group = new BasicDBObject();
-        BasicDBObject var1 = new BasicDBObject("_id", "$field");
-        var1.put("value", new BasicDBObject("$sum", "$count"));
-        group.put("$group", var1);
-        listCommand.add(project);
-        listCommand.add(group);
         Iterator<DBObject> res = collection.aggregate(listCommand).results().iterator();
-        List<String> resN = new ArrayList<String>();
-        List<Integer> resC = new ArrayList<Integer>();
+        List<String> values = new ArrayList<String>();
+        List<Integer> values_count = new ArrayList<Integer>();
         while (res.hasNext()) {
             DBObject obj = res.next();
-            String name = obj.get("_id").toString();
-            resN.add(name);
+            String field_value = obj.get("_id").toString();
+            values.add(field_value);
             int count = Integer.parseInt(obj.get("value").toString());
-            resC.add(count);
+            values_count.add(count);
         }
         ArrayList<Object> final_res = new ArrayList<Object>(2);
-        final_res.add(resN);
-        final_res.add(resC);
+        final_res.add(values);
+        final_res.add(values_count);
         return final_res;
+    }
+
+    private HashMap<String, HashSet<String>> parseCriteria(String inboxCriteria){
+        HashMap<String,HashSet<String>> res = new HashMap<String, HashSet<String>>();
+        String[] criteria = inboxCriteria.split(",");
+        for(String criterion:criteria){
+            String[] tmp = criterion.split(":");
+            if (!res.containsKey(tmp[0])) {
+                HashSet<String> set = new HashSet<String>();
+                set.add(tmp[1]);
+                res.put(tmp[0], set);
+            } else {
+                res.get(tmp[0]).add(tmp[1]);
+            }
+        }
+        return res;
+    }
+
+    private List<DBObject> getValuesQuery(String mainField, HashMap<String, HashSet<String>> criteria){
+        List<DBObject> listCommand = new ArrayList<DBObject>();
+        if (criteria != null) {
+            BasicDBObject match = new BasicDBObject();
+            BasicDBObject query = new BasicDBObject();
+            for(String field:criteria.keySet()){
+                ArrayList<String> list = new ArrayList<String>();
+                for(String record: criteria.get(field)){
+                    list.add(record);
+                }
+                query.put(field, new BasicDBObject("$in", list));
+            }
+            match.put("$match", query);
+            listCommand.add(match);
+        }
+        BasicDBObject project = new BasicDBObject("$project",
+                new BasicDBObject("field", "$" + mainField)
+                .append("count", new BasicDBObject("$add", 1)));
+        listCommand.add(project);
+        BasicDBObject group = new BasicDBObject("$group",
+                new BasicDBObject("_id", "$field")
+                .append("value", new BasicDBObject("$sum", "$count")));
+        listCommand.add(group);
+        return listCommand;
+    }
+
+    private List<DBObject> getRecordsQuery(String mainField, int skip, int limit){
+        List<DBObject> listCommand = new ArrayList<DBObject>();
+        BasicDBObject project = new BasicDBObject("$project",
+                new BasicDBObject("field", "$" + mainField));
+        listCommand.add(project);
+        BasicDBObject group = new BasicDBObject("$group",
+                new BasicDBObject("_id", "$field"));
+        listCommand.add(group);
+        BasicDBObject sort = new BasicDBObject("$sort",
+                new BasicDBObject("_id", 1));
+        listCommand.add(sort);
+        BasicDBObject skip_q = new BasicDBObject("$skip", skip);
+        listCommand.add(skip_q);
+        BasicDBObject limit_q = new BasicDBObject("$limit", limit);
+        listCommand.add(limit_q);
+        return listCommand;
     }
 }

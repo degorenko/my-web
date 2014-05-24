@@ -33,29 +33,8 @@ public class Application extends Controller {
         renderJSON(records);
     }
 
-    public static void chart(String dbs, String collections, String fields, String boxes) {
-        render(dbs, collections, fields, boxes);
-    }
-
     public static void getData(String dbs, String collections, String fields, String boxes) {
-        //ArrayList<Object> res = core.getValues(dbs, collections, fields);
-        //   ArrayList<Object> res = core.getValues(dbs, collections, fields);
-        ArrayList<Object> res = new ArrayList<Object>(2);
-        ArrayList<String> list1 = new ArrayList<String>();
-        ArrayList<Integer> list2 = new ArrayList<Integer>();
-        List<String> labels = Arrays.asList(boxes.split(","));
-        if (labels.contains("label1")) {
-            list1.add("label1");
-            list2.add(3);
-        }
-        if (labels.contains("label2")) {
-            list1.add("label2");
-            list2.add(1);
-        }
-        list1.add("label3");
-        list2.add(2);
-        res.add(list1);
-        res.add(list2);
+        ArrayList<Object> res = core.getValues(dbs, collections, fields, boxes);
         renderJSON(res);
     }
 }

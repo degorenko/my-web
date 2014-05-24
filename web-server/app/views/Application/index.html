@@ -14,7 +14,7 @@
     </div>
     <div id="content">
         <h1>Graphs</h1>
-        <form method="post" action="/chart">
+        <form method="post">
             <p> This is where you can choose dataBase, collections, fields and categories.</p>
             <h2>Databases:
             <select name="dbs" id="dbs">
@@ -27,15 +27,38 @@
             <span id="boxes">
             </span>
             <input type="hidden" name="boxes" id="boxes_hidden"/>
-            <h2><input type="submit" value="Create chart"></h2>
+            <input type="hidden" name="boxes_checked" id="boxes_checked_hidden"/>
+            <h4><lable class="reset">Reset all choices</lable></h4>
+            <h2><lable class="getChart">Get chart</lable></h2>
+            <div class="chart"></div>
         </form>
     </div>
 </div>
 <script type="text/javascript">
+    var skip = [];
+    var checked_boxes = [];
+    function getRecordsFunc(db, col, field, i, skip_, limit) {
+        $.get("/getRecords", {"db": db, "collection": col, "field": field,
+            "skip": skip_, "limit": limit }, function (data) {
+            if (data.length != 0) {
+                $("#boxes").find(".box" + i).remove();
+                $("#boxes").find(".box-label" + i).remove();
+                $(data.reverse()).each(function (index, element) {
+                    var checkboxTemplate = "<input type='checkbox' x-id='" + field + "' class='box"+ i+" box' id='checkbox-" + element + "'/>";
+                    var labelTemplate = "<label class='box-label"+ i+" box' for='checkbox-" + element + "'>" + element + "</label>";
+                    $(labelTemplate).insertAfter(".label-"+ field);
+                    $(checkboxTemplate).insertAfter(".label-"+ field);
+                    if ($.inArray('checkbox-' + element, checked_boxes) != -1) {
+                        $('#checkbox-' + element).prop("checked", true);
+                    }
+                });
+                skip[i]=skip_;
+            }
+        });
+    }
     $(function() {
-        var checked_boxes = [];
+        var checked_boxes_value = [];
         var limit = 6;
-        var skip = 0;
         $.ajaxSetup({async: false});
         $("#dbs").change(function() {
             var value = $(this).val();
@@ -56,32 +79,32 @@
             var db = $("#dbs").val();
             var col = $(this).val();
             if (col != null) {
+                var tmp_fields = []
                 $.get("/fields", {"db": db, "collection": col}, function(data) {
                     $("#fields").find("option").remove();
                     $(data).each(function(index,element) {
-                        var colMember = "<option value='" + element +"'>" + element + " </option>";
+                        var colMember = "<option value='" + element +"'>" + element + "</option>";
                         $("#fields").append(colMember);
+                        tmp_fields.push(element);
+                        skip.push(0);
                     })
-
                 });
-                skip = 0;
-                $("#fields").each(function(index_field) {
-                    var field = $(this).val();
-                    $("#boxes").find("input").remove();
-                    $("#boxes").find("label").remove();
-                    var fieldNameTemplate = "<label>" + field + ":</label>"
+                $("#boxes").find("input").remove();
+                $("#boxes").find("label").remove();
+                $.each(tmp_fields, function(index_field, value) {
+                    var field = value;
+                    var fieldNameTemplate = "<label class='label-"+ field + "'>" + field + ":</label>"
                     $("#boxes").append(fieldNameTemplate);
                     $.get("/getRecords", {"db": db, "collection": col, "field": field,
-                        "skip": skip, "limit": limit }, function(data) {
-                        $(data).each(function(index,element) {
-                            var checkboxTemplate = "<input type='checkbox' class='box' id='checkbox-" + element + "'/>";
-                            var labelTemplate = "<label for='checkbox-" + element + "'>" + element + "</label>";
+                        "skip": skip, "limit": limit }, function (data) {
+                        $(data).each(function (index, element) {
+                            var checkboxTemplate = "<input type='checkbox' x-id='" + field + "' class='box"+ index_field+" box' id='checkbox-" + element + "'/>";
+                            var labelTemplate = "<label class='box-label"+ index_field+" box' for='checkbox-" + element + "'>" + element + "</label>";
                             $("#boxes").append(checkboxTemplate, labelTemplate);
-                            skip+=limit;
                         })
                     });
-                    var prevValueTemplate = "<br><label class='prev' x-id='" + field + "'>Previous</label> "
-                    var nextValueTemplate = "<label class='next' x-id='" + field + "'>Next</label><br>"
+                    var prevValueTemplate = "<br><label class='prev' x-id='" + field + "' x-number="+ index_field +">Previous</label> "
+                    var nextValueTemplate = "<label class='next' x-id='" + field + "' x-number="+ index_field +">Next</label><br>"
                     $("#boxes").append(prevValueTemplate, nextValueTemplate);
                 });
             }
@@ -89,26 +112,70 @@
 
         $(".box").live("change", function(){
             var checked = $(this).prop('checked');
-            var _value = $(this).next("label").text();
+            var _value = $(this).attr("x-id") + ":" + $(this).next("label").text();
+            var id_box = $(this).attr("id");
             if (checked) {
-                checked_boxes.push(_value);
+                checked_boxes_value.push(_value);
+                checked_boxes.push(id_box);
             } else {
-                checked_boxes.splice( $.inArray(_value, checked_boxes), 1 );
+                checked_boxes_value.splice( $.inArray(_value, checked_boxes_value), 1 );
+                checked_boxes.splice( $.inArray(id_box, checked_boxes), 1 );
             }
-            $("#boxes_hidden").val(checked_boxes);
+            $("#boxes_hidden").val(checked_boxes_value);
+            $("#boxes_checked_hidden").val(checked_boxes);
         }).change();
 
         $(".next").live("click", function() {
-            console.log($(this).attr("x-id"));
+            var i = parseInt($(this).attr("x-number"));
+            getRecordsFunc($("#dbs").val(), $("#collections").val(),
+                    $(this).attr("x-id"), i, skip[i] + limit, limit);
         });
 
         $(".prev").live("click", function() {
-            console.log($(this).attr("x-id"));
+            var i = parseInt($(this).attr("x-number"));
+            if (skip[i] != 0) {
+                getRecordsFunc($("#dbs").val(), $("#collections").val(),
+                        $(this).attr("x-id"), i, skip[i] - limit, limit);
+            }
         });
 
         $("#dbs").change();
-        //$("#collections").change();
-        //$(".box").change();
+    });
+    $(".getChart").live("click", function createChart() {
+        $(".chart").find("canvas").remove();
+        $(".chart").append('<canvas id="canvas"></canvas>');
+        $.get("/getData", {"dbs": $("#dbs").val(), "collections": $("#collections").val(),
+                    "fields": $("#fields").val(), "boxes": $("#boxes_hidden").val() },
+                function(data) {
+                    var barData = {
+                        datasets : [ ]
+                    };
+                    barData.labels = data[0];
+                    //barData.datasets[0].data = data[1];
+                    barData.datasets.push({
+                        fillColor : "rgba(200,100,200,0.5)",
+                        strokeColor : "rgba(180,180,180,1)",
+                        data: data[1]
+                    });
+                    draw(barData);
+                });
+        });
+    function draw(barData) {
+        new Chart(document.getElementById("canvas").getContext("2d")).Bar(barData,
+                {
+                    scaleShowLabels: true,
+                    pointLabelFontSize: 18,
+                    scaleFontSize: 18
+                });
+    }
+    $(".reset").live("click", function reset() {
+        $.each(checked_boxes, function(index, value) {
+           // console.log(value);
+            $("#" + value).prop("checked", false);
+            checked_boxes = [];
+            $("#boxes_hidden").val("");
+            $("#boxes_checked_hidden").val(checked_boxes);
+        });
     })
 
 </script>
