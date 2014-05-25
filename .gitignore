@@ -1,5 +1,7 @@
-web-server/*.iml
+*/*.iml
 web-server/*.imr
 web-server/*.ipr
 web-server/*.iws
 web-server/tmp
+*-agent/out
+*-agent/.idea

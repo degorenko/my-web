@@ -1,0 +1,7 @@
+{
+    "User" : [ "started by user", "(?<=>).*(?=<)" ],
+    "Host": [ "building remotely on", "(?<=>).*(?=<)" ],
+    "Result": [ "finished:", "(?<=:\ ).*" ],
+    "Change" : [ "triggered by:", "(?<=>).*(?=<)" ],
+    "Build-name": [ "building remotely on", "(?<=workspace/).*$" ]
+}
