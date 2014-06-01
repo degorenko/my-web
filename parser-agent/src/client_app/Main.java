@@ -1,7 +1,5 @@
 package client_app;
 
-import client_app.parser.Core;
-
 /**
  * Created with IntelliJ IDEA.
  * User: denis
@@ -16,8 +14,14 @@ public class Main {
             String cond = "/disk/work/projects/project56/src/client_app/JSON/conditions";
             String info = "/disk/work/projects/project56/src/client_app/JSON/info";
             Core core = new Core(logs, cond, info);*/
-            Core core = new Core(args[0], args[1],args[2]);
-            core.run();
+            if (args.length == 4) {
+                Core core = new Core(args[0], args[1],args[2], true);
+                core.run();
+            }   else {
+                Core core = new Core(args[0], args[1],args[2], false);
+                core.run();
+            }
+
         }
         catch (Exception e) {
             e.printStackTrace();
