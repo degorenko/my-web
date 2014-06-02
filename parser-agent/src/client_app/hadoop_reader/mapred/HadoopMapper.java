@@ -1,4 +1,4 @@
-package client_app.hadoop_reader;
+package client_app.hadoop_reader.mapred;
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,13 +15,13 @@ import java.util.regex.Pattern;
 
 import client_app.Core;
 import javafx.util.Pair;
-import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-public class HadoopMapper extends Mapper<LongWritable, File, Integer, Pair<String, String>> {
+public class HadoopMapper extends Mapper<Text, File, Integer, Pair<String, String>> {
 
     @Override
-    public void map(LongWritable key, File file, Context context)
+    public void map(Text key, File file, Context context)
             throws IOException, InterruptedException {
         BufferedReader reader = new BufferedReader(new java.io.FileReader(file));
         String line;

@@ -1,13 +1,18 @@
 package client_app.hadoop_reader;
 
+import client_app.hadoop_reader.input.HadoopInputFormat;
+import client_app.hadoop_reader.mapred.HadoopMapper;
+import client_app.hadoop_reader.mapred.HadoopReducer;
+import client_app.hadoop_reader.output.HadoopOutputFormat;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import java.io.File;
+import java.util.UUID;
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,18 +22,35 @@ import java.io.File;
  * To change this template use File | Settings | File Templates.
  */
 public class HadoopReader {
+    public static final String key = "ololo";
+
     public void runReader(File path){
         try {
-            Job job = new Job();
-            //job.setJarByClass(WordCount.class);
-            job.setJobName("Parse logs");
+            Configuration conf = new Configuration();
+            String jobUUID = UUID.randomUUID().toString();
+            conf.set("jobUUID", jobUUID);
+            FileSystem fileSystem = FileSystem.get(conf);
+
+            Job job = new Job(conf, "parsing");
+
+            job.setInputFormatClass(HadoopInputFormat.class);
             FileInputFormat.setInputPaths(job, path.getAbsolutePath());
-            //FileOutputFormat.setOutputPath(job, new Path(args[1]));
+
+            job.setOutputFormatClass(HadoopOutputFormat.class);
+            Path outputPath = new Path("/parsing" + jobUUID + "/out");
+            HadoopOutputFormat.setOutputPath(job, outputPath);
+
+            job.setOutputKeyClass(Text.class);
+            job.setOutputValueClass(Text.class);
+
             job.setMapperClass(HadoopMapper.class);
             job.setReducerClass(HadoopReducer.class);
-            //job.setOutputKeyClass(Text.class);
-            //job.setOutputValueClass(IntWritable.class);
+
             job.waitForCompletion(true);
+
+            fileSystem.copyToLocalFile(false, new Path("/parsing/" + jobUUID + "/out.res"), new Path("/tmp/out"));
+
+            fileSystem.deleteOnExit(new Path("/parsing/" + jobUUID));
         }
         catch (Exception e) {
             e.printStackTrace();

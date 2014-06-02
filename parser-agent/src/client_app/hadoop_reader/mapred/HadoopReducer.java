@@ -1,4 +1,4 @@
-package client_app.hadoop_reader;
+package client_app.hadoop_reader.mapred;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,14 +16,15 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 public class HadoopReducer extends Reducer<Integer, Pair<String, String>, Text, Text> {
-
+    private HashMap<Integer, HashMap<String, String>> res;
     @Override
     public void reduce(Integer key, Iterable<Pair<String, String>> values, Context context)
             throws IOException, InterruptedException {
+        res = new HashMap<Integer, HashMap<String, String>>();
         HashMap<String, String> map = new HashMap<String, String>();
         for (Pair<String, String> value : values) {
             map.put(value.getKey(), value.getValue());
         }
-        Core.res.put(key, map);
+        res.put(key, map);
     }
 }

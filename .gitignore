@@ -1,5 +1,5 @@
-*/*.iml
 web-server/*.imr
+web-server/*.iml
 web-server/*.ipr
 web-server/*.iws
 web-server/tmp
