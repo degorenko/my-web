@@ -10,6 +10,7 @@
     <orderEntry type="library" name="json-simple-1.1.1" level="project" />
     <orderEntry type="library" name="hadoop-0.20.0-core" level="project" />
     <orderEntry type="library" name="hadoop-common-0.21.0" level="project" />
+    <orderEntry type="library" name="lib" level="project" />
   </component>
 </module>
 

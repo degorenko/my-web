@@ -1,12 +1,17 @@
 package client_app.hadoop_reader.input;
 
-import client_app.hadoop_reader.HadoopReader;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 /**
  * Created with IntelliJ IDEA.
@@ -18,6 +23,12 @@ import java.io.IOException;
 public class Reader extends RecordReader<Text, Text> {
     private volatile boolean finished = false;
     private final String path;
+    private String curPath;
+    private String curLine;
+    private FileSystem fs;
+    private FileStatus[] status;
+    private BufferedReader br;
+
 
     public Reader(String path) {
         this.path = path;
@@ -35,13 +46,14 @@ public class Reader extends RecordReader<Text, Text> {
 
     @Override
     public Text getCurrentKey() throws IOException, InterruptedException {
-        return new Text(HadoopReader.key);
+        getNextFile();
+        return new Text(curPath);
     }
 
     @Override
     public Text getCurrentValue() throws IOException, InterruptedException {
-        finished = true;
-        return new Text(path);
+        getNextLine();
+        return new Text(curLine);
     }
 
     @Override
@@ -55,5 +67,35 @@ public class Reader extends RecordReader<Text, Text> {
     @Override
     public void close() throws IOException {
         // No op
+    }
+
+    public void getNextFile() throws IOException {
+        if (fs == null) {
+            fs = FileSystem.get(new Configuration());
+            curPath = path;
+        }
+        status = fs.listStatus(new Path(curPath));
+        for (int i=0;i<status.length;i++){
+            if (status[i].isDir()) {
+                curPath = status[i].getPath().getName();
+                getNextFile();
+            }
+            br=new BufferedReader(new InputStreamReader(fs.open(status[i].getPath())));
+        }
+    }
+
+    public void getNextLine() throws IOException {
+        if (br == null) {
+            getNextFile();
+            getNextLine();
+        }
+        String line = br.readLine();
+        if (line != null) {
+            curLine = line;
+        }  else {
+            br = null;
+            getNextFile();
+            getNextLine();
+        }
     }
 }

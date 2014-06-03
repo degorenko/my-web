@@ -1,17 +1,19 @@
 package client_app.hadoop_reader;
 
+import client_app.Core;
 import client_app.hadoop_reader.input.HadoopInputFormat;
 import client_app.hadoop_reader.mapred.HadoopMapper;
 import client_app.hadoop_reader.mapred.HadoopReducer;
-import client_app.hadoop_reader.output.HadoopOutputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.HashMap;
 import java.util.UUID;
 
 /**
@@ -22,23 +24,20 @@ import java.util.UUID;
  * To change this template use File | Settings | File Templates.
  */
 public class HadoopReader {
-    public static final String key = "ololo";
 
     public void runReader(File path){
         try {
             Configuration conf = new Configuration();
             String jobUUID = UUID.randomUUID().toString();
             conf.set("jobUUID", jobUUID);
+            conf.setInt("countKeys", 0);
+
             FileSystem fileSystem = FileSystem.get(conf);
 
             Job job = new Job(conf, "parsing");
 
             job.setInputFormatClass(HadoopInputFormat.class);
-            FileInputFormat.setInputPaths(job, path.getAbsolutePath());
-
-            job.setOutputFormatClass(HadoopOutputFormat.class);
-            Path outputPath = new Path("/parsing" + jobUUID + "/out");
-            HadoopOutputFormat.setOutputPath(job, outputPath);
+            HadoopInputFormat.setInputPaths(job, path.getAbsolutePath());
 
             job.setOutputKeyClass(Text.class);
             job.setOutputValueClass(Text.class);
@@ -46,14 +45,23 @@ public class HadoopReader {
             job.setMapperClass(HadoopMapper.class);
             job.setReducerClass(HadoopReducer.class);
 
+            job.setNumReduceTasks(1);
             job.waitForCompletion(true);
 
-            fileSystem.copyToLocalFile(false, new Path("/parsing/" + jobUUID + "/out.res"), new Path("/tmp/out"));
-
+            Core.res = ReadFromHDFS(conf);
             fileSystem.deleteOnExit(new Path("/parsing/" + jobUUID));
         }
         catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private HashMap<Integer, HashMap<String, String>> ReadFromHDFS(Configuration conf) throws IOException, ClassNotFoundException {
+        FileSystem fs = FileSystem.get(conf);
+        Path path = new Path("/parsing" + conf.get("jobUUID") + "/out");
+        ObjectInputStream in = new ObjectInputStream(fs.open(path));
+        HashMap<Integer, HashMap<String, String>> res = (HashMap<Integer, HashMap<String, String>>)in.readObject();
+        in.close();
+        return res;
     }
 }
